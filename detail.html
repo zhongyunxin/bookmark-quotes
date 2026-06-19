@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookMark - 상세 보기</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main>
+    <div class="detail-container">
+      <!-- Back Link -->
+      <a href="index.html" class="back-link">
+        <span>←</span> 목록으로 돌아가기
+      </a>
+
+      <!-- Detail Card (will be populated dynamically) -->
+      <div id="detailCardWrapper">
+        <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+          불러오는 중...
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="detail-actions" id="actionButtons" style="display: none;">
+        <button id="editBtn" class="btn btn-secondary">✏️ 수정하기</button>
+        <button id="deleteBtn" class="btn btn-danger">🗑️ 삭제하기</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const quoteId = urlParams.get("id");
+      
+      const detailCardWrapper = document.getElementById("detailCardWrapper");
+      const actionButtons = document.getElementById("actionButtons");
+      const editBtn = document.getElementById("editBtn");
+      const deleteBtn = document.getElementById("deleteBtn");
+
+      if (!quoteId) {
+        handleInvalidAccess();
+        return;
+      }
+
+      const quote = getQuote(quoteId);
+
+      if (!quote) {
+        handleInvalidAccess();
+        return;
+      }
+
+      // Escape HTML helper
+      const escape = (str) => {
+        if (!str) return '';
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      };
+
+      // Populate details card
+      let memoHtml = "";
+      if (quote.memo && quote.memo.trim() !== "") {
+        memoHtml = `
+          <div class="detail-memo-section">
+            <div class="detail-memo-title">📝 나의 메모</div>
+            <div class="detail-memo-content">${escape(quote.memo)}</div>
+          </div>
+        `;
+      }
+
+      detailCardWrapper.innerHTML = `
+        <div class="detail-card">
+          <div class="detail-quote-section">
+            <span class="detail-quote-mark open">❝</span>
+            <div class="detail-quote-text">${escape(quote.quote)}</div>
+            <span class="detail-quote-mark close">❞</span>
+          </div>
+
+          <div class="detail-divider"></div>
+
+          <div class="detail-info-grid">
+            <div class="detail-info-item">
+              <span class="detail-info-label">📖 책 제목</span>
+              <span class="detail-info-value">${escape(quote.title)}</span>
+            </div>
+            <div class="detail-info-item">
+              <span class="detail-info-label">✍️ 저자</span>
+              <span class="detail-info-value">${escape(quote.author)}</span>
+            </div>
+            <div class="detail-info-item">
+              <span class="detail-info-label">📅 등록일</span>
+              <span class="detail-info-value">${quote.createdAt || 'N/A'}</span>
+            </div>
+          </div>
+
+          ${memoHtml}
+        </div>
+      `;
+
+      // Show action buttons
+      actionButtons.style.display = "flex";
+
+      // Edit Button
+      editBtn.addEventListener("click", () => {
+        location.href = `write.html?edit=${quote.id}`;
+      });
+
+      // Delete Button
+      deleteBtn.addEventListener("click", () => {
+        showConfirmModal(
+          "문장을 삭제하시겠습니까?",
+          "삭제된 기록은 복구할 수 없습니다.",
+          () => {
+            deleteQuote(quote.id);
+            location.href = "index.html";
+          }
+        );
+      });
+    });
+
+    function handleInvalidAccess() {
+      showCustomAlert("해당 기록을 찾을 수 없거나 올바르지 않은 접근입니다.");
+      setTimeout(() => {
+        location.href = "index.html";
+      }, 1500);
+    }
+  </script>
+</body>
+</html>

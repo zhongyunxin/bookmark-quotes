@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookMark - 인상깊은 문장 기록소</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main>
+    <!-- Dynamic Content Area -->
+    <div id="contentArea">
+      <!-- Loading State (will be replaced by JS) -->
+      <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+        불러오는 중...
+      </div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      renderPage();
+    });
+
+    function renderPage() {
+      const contentArea = document.getElementById("contentArea");
+      const quotes = getQuotes();
+
+      if (quotes.length === 0) {
+        // Render Empty State (Page 2)
+        contentArea.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>아직 기록된 문장이 없어요</h3>
+            <p>책을 읽으며 마음에 남았던 감동적인 구절이나 기억하고 싶은 글귀를 기록해 보세요.</p>
+            <button onclick="location.href='write.html'" class="btn btn-primary">
+              ✏️ 첫 문장 기록하기
+            </button>
+          </div>
+        `;
+      } else {
+        // Render List State (Page 3)
+        let cardsHtml = "";
+        
+        // Render cards in reverse order (newest first)
+        const displayQuotes = [...quotes].reverse();
+        
+        displayQuotes.forEach(q => {
+          // Escape HTML helper
+          const escape = (str) => {
+            if (!str) return '';
+            return str
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+          };
+
+          cardsHtml += `
+            <div class="quote-card" data-id="${q.id}">
+              <button class="card-delete-btn" onclick="handleDelete('${q.id}')" title="삭제">✕</button>
+              <div class="card-quote-text">
+                “${escape(q.quote)}”
+              </div>
+              <div class="card-meta">
+                <div class="card-author">✍️ ${escape(q.author)}</div>
+                <div class="card-book">📖 ${escape(q.title)}</div>
+              </div>
+              <div class="card-footer">
+                <a href="detail.html?id=${q.id}" class="card-detail-btn">자세히 보기 →</a>
+              </div>
+            </div>
+          `;
+        });
+
+        contentArea.innerHTML = `
+          <div class="list-header">
+            <div class="list-title">
+              <h2>📚 인상깊은 문장들을 모아보세요</h2>
+              <p>총 <strong>${quotes.length}</strong>개의 멋진 기록들이 보관되어 있습니다.</p>
+            </div>
+          </div>
+          <div class="quotes-grid">
+            ${cardsHtml}
+          </div>
+        `;
+      }
+    }
+
+    function handleDelete(id) {
+      showConfirmModal(
+        "문장을 삭제하시겠습니까?",
+        "삭제된 기록은 복구할 수 없습니다.",
+        () => {
+          deleteQuote(id);
+          renderPage();
+        }
+      );
+    }
+  </script>
+</body>
+</html>

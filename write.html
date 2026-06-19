@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookMark - 문장 기록</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <main>
+    <div class="form-container animate-fade">
+      <div class="form-header">
+        <h2 id="pageTitle">✏️ 새 문장 등록하기</h2>
+      </div>
+
+      <form id="quoteForm">
+        <div class="form-group">
+          <label for="bookTitle">📖 책 제목 <span class="required">*</span></label>
+          <input type="text" id="bookTitle" class="form-control" placeholder="책 제목을 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+          <label for="author">✍️ 저자 <span class="required">*</span></label>
+          <input type="text" id="author" class="form-control" placeholder="저자명을 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+          <label for="quoteText">💬 인상깊은 문장 <span class="required">*</span></label>
+          <textarea id="quoteText" class="form-control" placeholder="기억하고 싶은 문장을 입력하세요" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="memo">📝 메모 (선택)</label>
+          <textarea id="memo" class="form-control" placeholder="이 문장에 대한 나의 생각..."></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="cancelBtn" class="btn btn-secondary">취소</button>
+          <button type="submit" id="saveBtn" class="btn btn-primary">저장하기 💾</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get("edit");
+      
+      const pageTitle = document.getElementById("pageTitle");
+      const saveBtn = document.getElementById("saveBtn");
+      const cancelBtn = document.getElementById("cancelBtn");
+      const form = document.getElementById("quoteForm");
+      
+      const bookTitleInput = document.getElementById("bookTitle");
+      const authorInput = document.getElementById("author");
+      const quoteTextInput = document.getElementById("quoteText");
+      const memoInput = document.getElementById("memo");
+
+      let currentQuote = null;
+
+      // Check if we are in Edit Mode
+      if (editId) {
+        currentQuote = getQuote(editId);
+        if (currentQuote) {
+          pageTitle.textContent = "✏️ 문장 수정하기";
+          saveBtn.innerHTML = "수정하기 💾";
+          
+          // Populate fields
+          bookTitleInput.value = currentQuote.title;
+          authorInput.value = currentQuote.author;
+          quoteTextInput.value = currentQuote.quote;
+          memoInput.value = currentQuote.memo || "";
+        } else {
+          // If quote ID is invalid, redirect to index
+          showCustomAlert("해당 기록을 찾을 수 없습니다.");
+          setTimeout(() => {
+            location.href = "index.html";
+          }, 1500);
+        }
+      }
+
+      // Cancel button action
+      cancelBtn.addEventListener("click", () => {
+        if (editId) {
+          // Go back to details
+          location.href = `detail.html?id=${editId}`;
+        } else {
+          // Go back to main
+          location.href = "index.html";
+        }
+      });
+
+      // Form submission
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const title = bookTitleInput.value.trim();
+        const author = authorInput.value.trim();
+        const quote = quoteTextInput.value.trim();
+        const memo = memoInput.value.trim();
+
+        // Manual validation check
+        if (!title || !author || !quote) {
+          showCustomAlert("책 제목, 저자, 인상깊은 문장은 필수 입력 사항입니다.");
+          return;
+        }
+
+        const data = {
+          title,
+          author,
+          quote,
+          memo
+        };
+
+        if (editId && currentQuote) {
+          data.id = editId;
+        }
+
+        saveQuote(data);
+        
+        // Redirect on save
+        if (editId) {
+          // Redirect to detail page of the updated quote
+          location.href = `detail.html?id=${editId}`;
+        } else {
+          // Redirect to main page
+          location.href = "index.html";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

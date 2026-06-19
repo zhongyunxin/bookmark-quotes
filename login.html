@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookMark - 로그인</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Floating Theme Toggle for Login Page -->
+  <div style="position: absolute; top: 1.5rem; right: 1.5rem;">
+    <button id="loginThemeToggle" class="theme-toggle" title="테마 변경">
+      <span class="dark-icon">🌙</span>
+      <span class="light-icon">☀️</span>
+    </button>
+  </div>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <h2>📖 BookMark</h2>
+        <p>인상깊은 문장을 기록하세요</p>
+      </div>
+
+      <!-- Error Message Alert -->
+      <div id="errorMessage" class="login-error">
+        <span>⚠️</span>
+        <span id="errorText">오류 메시지</span>
+      </div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">아이디 <span class="required">*</span></label>
+          <input type="text" id="username" class="form-control" placeholder="아이디를 입력하세요" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="password">비밀번호 <span class="required">*</span></label>
+          <input type="password" id="password" class="form-control" placeholder="비밀번호를 입력하세요" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem; margin-top: 1rem; font-size: 1rem;">
+          로그인
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginForm = document.getElementById("loginForm");
+      const usernameInput = document.getElementById("username");
+      const passwordInput = document.getElementById("password");
+      const errorMessage = document.getElementById("errorMessage");
+      const errorText = document.getElementById("errorText");
+      
+      // Wire theme toggle for login page since it doesn't have the standard header
+      const loginThemeToggle = document.getElementById("loginThemeToggle");
+      if (loginThemeToggle) {
+        loginThemeToggle.addEventListener("click", () => {
+          toggleTheme();
+        });
+      }
+
+      function showError(text) {
+        errorText.textContent = text;
+        errorMessage.style.display = "flex";
+        
+        // Retrigger shake animation
+        errorMessage.style.animation = 'none';
+        errorMessage.offsetHeight; /* trigger reflow */
+        errorMessage.style.animation = null;
+      }
+
+      function hideError() {
+        errorMessage.style.display = "none";
+      }
+
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        hideError();
+
+        const idValue = usernameInput.value.trim();
+        const pwValue = passwordInput.value.trim();
+
+        // 1. Validation for empty values
+        if (!idValue || !pwValue) {
+          showError("아이디와 비밀번호를 입력해주세요");
+          return;
+        }
+
+        // Success: Anyone can log in now as long as fields are not empty
+        localStorage.setItem("isLogin", "true");
+        localStorage.setItem("userId", idValue);
+        const currentDir = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+        window.location.href = currentDir + "index.html";
+      });
+    });
+  </script>
+</body>
+</html>

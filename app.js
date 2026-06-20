@@ -121,4 +121,3 @@ function toggleTimer() {
         }, 1000);
     }
 }
-v

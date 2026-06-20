@@ -1,105 +1,65 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BookMark - 인상깊은 문장 기록소</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>인공지능 스마트 냉장고 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="container mt-5" style="background-color: #fafafa;">
+    <h1 class="mb-4 fw-bold text-success">냉장고를 부탁해 AI 🍎</h1>
 
-  <main>
-    <!-- Dynamic Content Area -->
-    <div id="contentArea">
-      <!-- Loading State (will be replaced by JS) -->
-      <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-        불러오는 중...
-      </div>
+    <div class="card card-body mb-4 shadow-sm">
+        <h5 class="card-title fw-bold">① 식재료 등록</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <input type="text" id="foodName" class="form-control" placeholder="식재료 이름 (예: 방울토마토)">
+            </div>
+            <div class="col-md-4">
+                <select id="foodCategory" class="form-select">
+                    <option value="정육/생선">정육/생선</option>
+                    <option value="야채/과일">야채/과일</option>
+                    <option value="유제품">유제품</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="date" id="expiryDate" class="form-control">
+            </div>
+            <div class="col-12 text-end">
+                <button onclick="addFood()" class="btn btn-success px-4">등록하기</button>
+            </div>
+        </div>
     </div>
-  </main>
 
-  <script src="app.js"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      renderPage();
-    });
+    <div class="card card-body mb-4 shadow-sm">
+        <h5 class="card-title fw-bold">② 현재 보관 중인 식재료</h5>
+        <table class="table align-middle mt-3">
+            <thead>
+                <tr>
+                    <th style="width: 10%">선택</th>
+                    <th>이름</th>
+                    <th>카테고리</th>
+                    <th>유통기한</th>
+                    <th>남은 기간</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryList">
+                </tbody>
+        </table>
+        <button onclick="recommendRecipe()" class="btn btn-primary btn-lg w-100 mt-2">선택한 재료로 AI 레시피 추천받기 ✨</button>
+    </div>
 
-    function renderPage() {
-      const contentArea = document.getElementById("contentArea");
-      const quotes = getQuotes();
-
-      if (quotes.length === 0) {
-        // Render Empty State (Page 2)
-        contentArea.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-icon">📭</div>
-            <h3>아직 기록된 문장이 없어요</h3>
-            <p>책을 읽으며 마음에 남았던 감동적인 구절이나 기억하고 싶은 글귀를 기록해 보세요.</p>
-            <button onclick="location.href='write.html'" class="btn btn-primary">
-              ✏️ 첫 문장 기록하기
-            </button>
-          </div>
-        `;
-      } else {
-        // Render List State (Page 3)
-        let cardsHtml = "";
+    <div id="recipeResult" class="card card-body shadow-sm d-none">
+        <h5 class="card-title fw-bold text-primary">③ AI 추천 레시피 및 조리 타이머</h5>
+        <div class="p-3 bg-light rounded mb-3" id="recipeContent"></div>
         
-        // Render cards in reverse order (newest first)
-        const displayQuotes = [...quotes].reverse();
-        
-        displayQuotes.forEach(q => {
-          // Escape HTML helper
-          const escape = (str) => {
-            if (!str) return '';
-            return str
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;")
-              .replace(/'/g, "&#039;");
-          };
+        <div class="border-top pt-3 text-center">
+            <h6>⏱️ 추천 조리 타이머</h6>
+            <h2 id="timerDisplay" class="fw-bold my-2 text-danger">02:00</h2>
+            <button id="timerBtn" onclick="toggleTimer()" class="btn btn-outline-danger btn-sm">타이머 시작</button>
+        </div>
+    </div>
 
-          cardsHtml += `
-            <div class="quote-card" data-id="${q.id}">
-              <button class="card-delete-btn" onclick="handleDelete('${q.id}')" title="삭제">✕</button>
-              <div class="card-quote-text">
-                “${escape(q.quote)}”
-              </div>
-              <div class="card-meta">
-                <div class="card-author">✍️ ${escape(q.author)}</div>
-                <div class="card-book">📖 ${escape(q.title)}</div>
-              </div>
-              <div class="card-footer">
-                <a href="detail.html?id=${q.id}" class="card-detail-btn">자세히 보기 →</a>
-              </div>
-            </div>
-          `;
-        });
-
-        contentArea.innerHTML = `
-          <div class="list-header">
-            <div class="list-title">
-              <h2>📚 인상깊은 문장들을 모아보세요</h2>
-              <p>총 <strong>${quotes.length}</strong>개의 멋진 기록들이 보관되어 있습니다.</p>
-            </div>
-          </div>
-          <div class="quotes-grid">
-            ${cardsHtml}
-          </div>
-        `;
-      }
-    }
-
-    function handleDelete(id) {
-      showConfirmModal(
-        "문장을 삭제하시겠습니까?",
-        "삭제된 기록은 복구할 수 없습니다.",
-        () => {
-          deleteQuote(id);
-          renderPage();
-        }
-      );
-    }
-  </script>
+    <script src="app.js"></script>
 </body>
 </html>
